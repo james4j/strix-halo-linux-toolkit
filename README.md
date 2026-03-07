@@ -5,7 +5,7 @@
 >
 > If the following warnings don't scare you, you either have the money to lose, the skills to deal with a bricked bootloader, or you're too dumb to know better. This repository modifies core kernel parameters, power states, and Unified Kernel Images (UKIs). 
 > 
-> **HP ZBOOK ULTRA / BIOS WARNING:** This toolkit was developed and tested on an **HP ZBook Power G11 Ultra (Strix Halo)**. HP BIOS implementations are notoriously "sensitive." If you botch your `limine.conf` or `cmdline`, the BIOS may drop your EFI entry entirely, leaving you staring at a "No Bootable Device" screen.
+> **HP ZBOOK ULTRA / BIOS WARNING:** This toolkit was developed and tested on an **HP ZBook Power G1A Ultra (Strix Halo)**. HP BIOS implementations are notoriously "sensitive." If you botch your `limine.conf` or `cmdline`, the BIOS may drop your EFI entry entirely, leaving you staring at a "No Bootable Device" screen.
 >
 > **RECOVERY PRE-REQS:** Do not touch these files unless you have a CachyOS/Arch Live USB ready and know how to `chroot`.
 
