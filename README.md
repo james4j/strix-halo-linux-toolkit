@@ -16,8 +16,9 @@ In CachyOS-land, kernel updates (`linux-cachyos`) arrive almost daily. Every tim
 
 **The Post-Update Checklist:**
 1. **Re-verify DKMS**: Ensure `amdxdna` built for the new kernel: `dkms status`.
-2. **Re-sync Limine**: Run `sudo ./scripts/limine-snapper-sync.sh`.
-3. **Audit the Taint**: Check `/boot/limine.conf` to ensure your parameters haven't been stripped by a package maintainer's default config.
+2. **Rebuild UKIs**: Run `sudo mkinitcpio -P` to bake the new kernel and parameters into your images.
+3. **Re-sync Limine**: Run `sudo ./scripts/limine-snapper-sync.sh`.
+4. **Audit the Taint**: Check `/boot/limine.conf` to ensure your parameters haven't been stripped.
 
 ## 2. The Golden Kernel Parameters (The Taints)
 These parameters are mandatory for Strix Halo stability. Without them, your NPU will crash, your battery will drain in 2 hours, and your system will hang on wake.
