@@ -27,50 +27,56 @@ These parameters are mandatory for Strix Halo stability. Without them, your NPU 
 ```text
 pcie_aspm=force mem_sleep_default=s2idle intremap=off amd_iommu=fullflush iommu=pt acpi_enforce_resources=lax ttm.pages_limit=25165824 ttm.page_pool_size=25165824
 ```
-*Note: `amd_iommu=fullflush` is specifically for NPU stability under heavy 14k+ tiling loads.*
+*Note: `amd_iommu=fullflush` is specifically for NPU stability under heavy 14k+ tiling loads. See [docs/KERNEL_TAINTS.md](docs/KERNEL_TAINTS.md) for the memory math.*
 
-## 3. Toolkit Scripts & Hotkeys
+## 3. NPU Stack Installation (XRT)
 
-* **`s2idle_fix.sh`**: Disables the USB4 Host Routers (`0000:c5:00.5/.6`) that cause S2idle resume hangs.
-* **`npu-recovery.sh`**: **Trigger this with a Hotkey.** On the ZBook Ultra, we map this to a custom shortcut (like the **Copilot Key** or `Ctrl+Alt+N`). It force-kills NPU-locked processes and reloads the `amdxdna` driver.
-* **`test-npu-api.sh`**: Quick verification for your **FastFlowLM** server.
-* **`test_limine.sh`**: A **Safe UI Sandbox** tool. Launches a virtualized (QEMU) instance of your Limine menu. This allows you to test themes and layout changes without risking your real hardware. **Note:** This tests the *menu aesthetics only*; the kernel will not actually boot in the VM. (See [docs/LIMINE_SANDBOX.md](docs/LIMINE_SANDBOX.md)).
+To use the NPU for Local LLMs, you need the `amdxdna` kernel driver and the XRT runtime.
 
-## 4. Emergency Recovery (Btrfs/UKI)
-
-If you hosed the machine and it won't boot, use your Live USB:
-
-1. **Mount Root with Subvolumes**:
+1. **Install Headers First**:
    ```bash
-   sudo mount /dev/nvme0n1p1 /mnt -o subvol=@
-   sudo mount /dev/nvme0n1p1 /mnt/home -o subvol=@home
+   sudo pacman -S linux-cachyos-headers  # Match your kernel!
    ```
-2. **Mount EFI**:
+2. **Install the Stack**:
    ```bash
-   sudo mount /dev/nvme0n1p2 /mnt/boot
+   paru -S xrt-amdxdna
    ```
-3. **Fix the Config with Vim**:
+3. **Environment Setup**: Add to your `~/.zshrc` or `~/.bashrc`:
    ```bash
-   arch-chroot /mnt
-   vim /boot/limine.conf
-   # Ensure your cmdline matches the "Golden Parameters" above.
-   ```
-4. **Re-enroll (If BIOS lost the entry)**:
-   ```bash
-   limine enroll-config /boot/limine.conf /dev/nvme0n1
-   ```
-5. **Exit and Unmount (CRITICAL)**:
-   ```bash
-   exit # Exit the chroot
-   sudo umount -R /mnt
-   reboot
+   export XILINX_XRT=/opt/xilinx/xrt
+   export LD_LIBRARY_PATH=$XILINX_XRT/lib:$LD_LIBRARY_PATH
+   export PATH=$XILINX_XRT/bin:$PATH
    ```
 
-## 5. XRT Environment (`/opt/xilinx/xrt`)
-The NPU requires the Xilinx Runtime. After installing `xrt-amdxdna`, you **must** source the environment in your `.zshrc` or `.bashrc`:
-```bash
-export XILINX_XRT=/opt/xilinx/xrt
-export LD_LIBRARY_PATH=$XILINX_XRT/lib:$LD_LIBRARY_PATH
-export PATH=$XILINX_XRT/bin:$PATH
-```
-*Note: This environment is required specifically for engines like **FastFlowLM**. Standard GGUF runners using Vulkan (iGPU) do not require the NPU stack.*
+## 4. Running Models (The Engine)
+The Strix Halo NPU (XDNA 2) is **not** currently supported by standard `llama.cpp` or LM Studio. You must use a native XDNA 2 engine to achieve 51 TOPS.
+
+* **Primary Engine**: [FastFlowLM](https://github.com/hpcaitech/FastFlowLM) (The current standard for native XDNA 2 inference on Linux).
+
+## 5. Toolkit Scripts & Discovery
+
+**⚠️ IMPORTANT:** The scripts in this toolkit contain PCI IDs (like `0000:c5:00.5`) specific to the HP ZBook Ultra. You **must** verify your own IDs before running them.
+
+### Finding Your Hardware IDs
+Run these commands to identify your specific hardware paths:
+
+*   **For USB4 (S2idle Fix)**:
+    ```bash
+    lspci -D | grep "USB4 Host Router"
+    ```
+    Take these IDs and update the `TARGETS` array in `scripts/s2idle_fix.sh`.
+
+*   **For the NPU**:
+    ```bash
+    lspci -D | grep "Processing accelerators"
+    # Should return something like [0000:c4:00.1]
+    ```
+
+### Script Overview
+* **`s2idle_fix.sh`**: Disables the USB4 Host Routers that cause S2idle resume hangs. Update the `TARGETS` with your IDs from above.
+* **`npu-recovery.sh`**: **Trigger this with a Hotkey.** Map to a custom shortcut. It force-kills NPU-locked processes and reloads the driver.
+* **`test-npu-api.sh`**: Quick verification for your inference server.
+* **`test_limine.sh`**: A **Safe UI Sandbox** tool. (See [docs/LIMINE_SANDBOX.md](docs/LIMINE_SANDBOX.md)).
+
+## 6. Emergency Recovery (Btrfs/UKI)
+... [Rest of recovery section]
