@@ -33,6 +33,7 @@ pcie_aspm=force mem_sleep_default=s2idle intremap=off amd_iommu=fullflush iommu=
 * **`s2idle_fix.sh`**: Disables the USB4 Host Routers (`0000:c5:00.5/.6`) that cause S2idle resume hangs.
 * **`npu-recovery.sh`**: **Trigger this with a Hotkey.** On the ZBook Ultra, we map this to a custom shortcut (like the **Copilot Key** or `Ctrl+Alt+N`). It force-kills NPU-locked processes and reloads the `amdxdna` driver.
 * **`test-npu-api.sh`**: Quick verification for your **FastFlowLM** server.
+* **`test_limine.sh`**: A **Safe Sandbox** tool. Launches a virtualized (QEMU) instance of your Limine config using a loopback image. This allows you to test themes and kernel parameter changes without risking your real hardware. (See [docs/LIMINE_SANDBOX.md](docs/LIMINE_SANDBOX.md)).
 
 ## 4. Emergency Recovery (Btrfs/UKI)
 
