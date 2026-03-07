@@ -39,7 +39,7 @@ To use the NPU for Local LLMs, you need the `amdxdna` kernel driver and the XRT 
    ```
 2. **Install the Stack**:
    ```bash
-   paru -S xrt-amdxdna
+   paru -S xrt-amdxdna psmisc  # psmisc is required for the npu-recovery script
    ```
 3. **Environment Setup**: Add to your `~/.zshrc` or `~/.bashrc`:
    ```bash
