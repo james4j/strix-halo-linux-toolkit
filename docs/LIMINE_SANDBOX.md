@@ -1,6 +1,8 @@
 # Guide: UEFI Limine Testing Sandbox (CachyOS/Linux)
 
-This document describes how to create a safe, virtualized "sandbox" for iterating on Limine bootloader configurations without risking system stability. It uses a loopback FAT32 image physically stored on your ESP but managed as a local directory.
+**⚠️ SCOPE WARNING:** This sandbox is designed **exclusively for testing Limine UI, menu layouts, theme colors, and config syntax.** 
+
+Because the sandbox runs in a virtualized environment (QEMU) without access to your real Strix Halo hardware or Btrfs subvolumes, the actual kernel **will fail to boot** once you select an entry. Do not use this tool to verify if your kernel parameters work—use it only to avoid rebooting while tweaking your bootloader's aesthetics.
 
 ---
 
