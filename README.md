@@ -58,6 +58,12 @@ If you hosed the machine and it won't boot, use your Live USB:
    ```bash
    limine enroll-config /boot/limine.conf /dev/nvme0n1
    ```
+5. **Exit and Unmount (CRITICAL)**:
+   ```bash
+   exit # Exit the chroot
+   sudo umount -R /mnt
+   reboot
+   ```
 
 ## 5. XRT Environment (`/opt/xilinx/xrt`)
 The NPU requires the Xilinx Runtime. After installing `xrt-amdxdna`, you **must** source the environment in your `.zshrc` or `.bashrc`:
