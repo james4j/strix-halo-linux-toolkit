@@ -80,5 +80,11 @@ Run these commands to identify your specific hardware paths:
 * **`test-npu-api.sh`**: Quick verification for your inference server.
 * **`test_limine.sh`**: A **Safe UI Sandbox** tool. (See [docs/LIMINE_SANDBOX.md](docs/LIMINE_SANDBOX.md)).
 
-## 6. Emergency Recovery (Btrfs/UKI)
+## 4. System Automation (Highly Recommended)
+Manually running scripts before every sleep is annoying. You can automate the S2idle fix and the NPU driver reload using `systemd-sleep` hooks.
+
+See [docs/AUTOMATION.md](docs/AUTOMATION.md) for the setup instructions.
+
+## 5. Emergency Recovery (Btrfs/UKI)
+
 ... [Rest of recovery section]
