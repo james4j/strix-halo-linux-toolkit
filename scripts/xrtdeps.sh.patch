@@ -1,0 +1,143 @@
+--- xrtdeps.sh	2026-02-26 23:36:38.029574871 -0500
++++ /home/james/Gemini/Research/XDNA_Driver_Patch/xrtdeps.sh.patched	2026-02-26 23:36:38.026574871 -0500
+@@ -9,6 +9,16 @@
+ MAJOR=${VERSION%.*}
+ ARCH=`uname -m`
+ 
++case $FLAVOR in
++    arch|cachyos|manjaro|endeavouros) BASE_FLAVOR="arch" ;;
++    ubuntu|debian|linuxmint)          BASE_FLAVOR="ubuntu" ;;
++    centos|rhel|amzn|almalinux|rocky) BASE_FLAVOR="rhel" ;;
++    fedora)                           BASE_FLAVOR="fedora" ;;
++    mariner)                          BASE_FLAVOR="mariner" ;;
++    sles)                             BASE_FLAVOR="sles" ;;
++    *)                                BASE_FLAVOR=$FLAVOR ;;
++esac
++
+ usage()
+ {
+     echo "Usage: xrtdeps.sh [options]"
+@@ -479,17 +489,17 @@
+ 
+ update_package_list()
+ {
+-    if [ $FLAVOR == "ubuntu" ] || [ $FLAVOR == "debian" ] || [ $FLAVOR == "linuxmint" ]; then
++    if [ $BASE_FLAVOR == "ubuntu" ]; then
+         ub_package_list
+-    elif [ $FLAVOR == "centos" ] || [ $FLAVOR == "rhel" ] || [ $FLAVOR == "amzn" ] || [ $FLAVOR == "almalinux" ] || [ $FLAVOR == "rocky" ]; then
++    elif [ $BASE_FLAVOR == "rhel" ]; then
+         rh_package_list
+-    elif [ $FLAVOR == "fedora" ]; then
++    elif [ $BASE_FLAVOR == "fedora" ]; then
+         fd_package_list
+-    elif [ $FLAVOR == "sles" ]; then
++    elif [ $BASE_FLAVOR == "sles" ]; then
+         suse_package_list
+-    elif [ $FLAVOR == "mariner" ]; then
++    elif [ $BASE_FLAVOR == "mariner" ]; then
+         mariner_package_list
+-    elif [ $FLAVOR == "arch" ]; then
++    elif [ $BASE_FLAVOR == "arch" ]; then
+         arch_package_list
+     else
+         echo "unknown OS flavor $FLAVOR"
+@@ -499,7 +509,7 @@
+ 
+ validate()
+ {
+-    if [ $FLAVOR == "ubuntu" ] || [ $FLAVOR == "debian" ] || [ $FLAVOR == "linuxmint" ]; then
++    if [ $BASE_FLAVOR == "ubuntu" ]; then
+         #apt-get -qq list "${UB_LIST[@]}"
+         dpkg -l "${UB_LIST[@]}" > /dev/null
+         if [ $? == 0 ] ; then
+@@ -508,7 +518,7 @@
+         fi
+     fi
+ 
+-    if [ $FLAVOR == "centos" ] || [ $FLAVOR == "rhel" ] || [ $FLAVOR == "amzn" ] || [ $FLAVOR == "almalinux" ] || [ $FLAVOR == "rocky" ] ; then
++    if [ $BASE_FLAVOR == "rhel" ] ; then
+         rpm -q "${RH_LIST[@]}"
+         if [ $? == 0 ] ; then
+             # Validate we have OpenCL 2.X headers installed
+@@ -745,13 +755,11 @@
+ install_pybind11()
+ {
+     echo "Installing pybind11..."
+-    if [ $FLAVOR == "mariner" ]; then
++    if [ $BASE_FLAVOR == "mariner" ]; then
+         sudo dnf install -y pybind11-devel python3-pybind11
+-    elif [ $FLAVOR == "ubuntu" ] && [ $MAJOR -ge 23 ]; then
++    elif [ $BASE_FLAVOR == "ubuntu" ] && [ $MAJOR -ge 23 ]; then
+         apt-get install -y pybind11-dev
+-    elif [ $FLAVOR == "linuxmint" ]; then
+-        apt-get install -y pybind11-dev
+-    elif [ $FLAVOR == "arch" ]; then
++    elif [ $BASE_FLAVOR == "arch" ]; then
+         pacman -Syu --needed --noconfirm pybind11
+     else
+         # Install/upgrade pybind11 for building the XRT python bindings
+@@ -809,7 +817,7 @@
+ 
+ install()
+ {
+-    if [ $FLAVOR == "ubuntu" ] || [ $FLAVOR == "debian" ] || [ $FLAVOR == "linuxmint" ]; then
++    if [ $BASE_FLAVOR == "ubuntu" ]; then
+         prep_ubuntu
+ 
+         echo "Installing packages..."
+@@ -823,19 +831,15 @@
+     # Enable EPEL on CentOS/RHEL
+     if [ $FLAVOR == "centos" ]; then
+         prep_centos
+-    elif [ $FLAVOR == "rhel" ]; then
++    elif [ $BASE_FLAVOR == "rhel" ]; then
+         prep_rhel
+-    elif [ $FLAVOR == "amzn" ]; then
+-        prep_amzn
+-    elif [ $FLAVOR == "mariner" ]; then
++    elif [ $BASE_FLAVOR == "mariner" ]; then
+         prep_mariner
+-    elif [ $FLAVOR == "sles" ]; then
++    elif [ $BASE_FLAVOR == "sles" ]; then
+         prep_sles
+-    elif [ $FLAVOR == "almalinux" ] || [ $FLAVOR == "rocky" ] ; then
+-        prep_alma
+     fi
+ 
+-    if [ $FLAVOR == "rhel" ] || [ $FLAVOR == "centos" ] || [ $FLAVOR == "amzn" ] || [ $FLAVOR == "almalinux" ] || [ $FLAVOR == "rocky" ]; then
++    if [ $BASE_FLAVOR == "rhel" ]; then
+         echo "Installing RHEL/CentOS packages..."
+         yum install -y "${RH_LIST[@]}"
+         if [ $ds9 == 1 ]; then
+@@ -850,26 +854,26 @@
+         fi
+     fi
+ 
+-    if [[ $FLAVOR == "centos" || $FLAVOR == "rhel" || $FLAVOR == "almalinux" || $FLAVOR == "rocky" ]] && [ $MAJOR -eq "8" ]; then
++    if [[ $BASE_FLAVOR == "rhel" ]] && [ $MAJOR -eq "8" ]; then
+         yum install -y gcc-toolset-9-toolchain
+     fi
+ 
+-    if [ $FLAVOR == "fedora" ]; then
++    if [ $BASE_FLAVOR == "fedora" ]; then
+         echo "Installing Fedora packages..."
+         yum install -y "${FD_LIST[@]}"
+     fi
+ 
+-    if [ $FLAVOR == "sles" ] ; then
++    if [ $BASE_FLAVOR == "sles" ] ; then
+         echo "Installing SUSE packages..."
+         ${SUDO} zypper install -y "${SUSE_LIST[@]}"
+     fi
+ 
+-    if [ $FLAVOR == "mariner" ]; then
++    if [ $BASE_FLAVOR == "mariner" ]; then
+         echo "Installing Mariner packages..."
+         dnf install -y "${MN_LIST[@]}"
+     fi
+ 
+-    if [ $FLAVOR == "arch" ]; then
++    if [ $BASE_FLAVOR == "arch" ]; then
+         echo "Installing Arch Linux packages..."
+         pacman -Syu --needed --noconfirm "${ARCH_LIST[@]}"
+     fi

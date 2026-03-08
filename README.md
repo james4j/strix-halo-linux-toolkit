@@ -33,6 +33,8 @@ pcie_aspm=force mem_sleep_default=s2idle intremap=off amd_iommu=fullflush iommu=
 
 To use the NPU for Local LLMs, you need the `amdxdna` kernel driver and the XRT runtime.
 
+**Note for Source Builders:** If you are building XRT from the official AMD source on **CachyOS**, the dependency script will fail. Apply the patch included in this repo: [docs/XRT_PATCH_GUIDE.md](docs/XRT_PATCH_GUIDE.md).
+
 1. **Install Headers First**:
    ```bash
    sudo pacman -S linux-cachyos-headers  # Match your kernel!
