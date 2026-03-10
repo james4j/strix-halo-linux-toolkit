@@ -1,0 +1,11 @@
+[Unit]
+Description=Disable USB4 Wakeup Triggers for Strix Halo Stability
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/james/Gemini/scripts/s2idle_fix.sh --disable
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

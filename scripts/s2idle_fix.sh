@@ -3,7 +3,6 @@
 # Purpose: Surgically disable USB4 Host Router wakeup triggers to fix S2idle resume hangs.
 # 
 # Targeted Devices:
-# To find your specific IDs, run: lspci -D | grep "USB4 Host Router"
 # - 0000:c5:00.5 (USB4 Host Router 0)
 # - 0000:c5:00.6 (USB4 Host Router 1)
 # 
@@ -16,7 +15,7 @@ disable_targets() {
     for id in "${TARGETS[@]}"; do
         dev="/sys/bus/pci/devices/$id/power/wakeup"
         if [ -e "$dev" ]; then
-            echo "disabling" | sudo tee "$dev" > /dev/null
+            echo "disabled" | sudo tee "$dev" > /dev/null
             echo "Target $id: DISABLED"
         fi
     done

@@ -1,5 +1,5 @@
 --- xrtdeps.sh	2026-02-26 23:36:38.029574871 -0500
-+++ /home/james/Gemini/Research/XDNA_Driver_Patch/xrtdeps.sh.patched	2026-02-26 23:36:38.026574871 -0500
++++ /home/james/Clones/Research/XDNA_Driver_Patch/xrtdeps.sh.patched	2026-02-26 23:36:38.026574871 -0500
 @@ -9,6 +9,16 @@
  MAJOR=${VERSION%.*}
  ARCH=`uname -m`

@@ -1,24 +1,26 @@
-# Automating the Fixes (systemd hooks)
+# Automating the Fixes (systemd)
 
-To make these fixes "permanent" so they run automatically every time your laptop goes to sleep, you must install them as `systemd-sleep` hooks.
+To ensure your Strix Halo hardware remains stable without manual intervention, you should install the following automation tools.
 
-## 1. Automated S2idle Fix
-The `s2idle_fix.sh` script is designed to run right before the system suspends. This prevents the USB4 Host Routers from triggering a wake-up hang.
+## 1. Permanent USB4 Wakeup Fix (Service)
+On the HP ZBook Ultra, the USB4 Host Routers send ghost signals during sleep that freeze the system. Disabling these at boot is the most reliable solution.
 
 ### Installation:
-1. Copy the script to the system sleep directory:
+1. Copy the service file from the toolkit:
    ```bash
-   sudo cp scripts/s2idle_fix.sh /usr/lib/systemd/system-sleep/cachyos-s2idle-fix
+   sudo cp configs/strix-halo-usb-fix.service /etc/systemd/system/
    ```
-2. Ensure it is executable:
+2. Reload and enable the service:
    ```bash
-   sudo chmod +x /usr/lib/systemd/system-sleep/cachyos-s2idle-fix
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now strix-halo-usb-fix.service
    ```
+3. **Verify:** `grep . /sys/bus/pci/devices/0000:c5:00.[56]/power/wakeup` should show `disabled`.
 
-## 2. Automated NPU Recovery
-The XDNA 2 NPU driver (`amdxdna`) can sometimes cause kernel panics or "zombie" states if the system suspends while the driver is active or if the SMU (System Management Unit) power states aren't synchronized.
+---
 
-The solution is to **unload the driver before suspend** and **reload it after resume**.
+## 2. Automated NPU Driver Reload (Sleep Hook)
+The NPU driver (`amdxdna`) must be cycled during the sleep transition to maintain SMU synchronization.
 
 ### Installation:
 1. Create the hook file:
@@ -47,4 +49,4 @@ The solution is to **unload the driver before suspend** and **reload it after re
    ```
 
 ## Why this is necessary
-Without these hooks, your ZBook Ultra may appear to sleep but will actually be "hot" in your bag, or it will simply refuse to wake up, forcing a hard-reboot (power button hold). These hooks ensure the hardware is in a "clean" state before the power transition happens.
+This dual-layer approach (Boot Service + Sleep Hook) ensures that the USB4 triggers are locked down permanently while the NPU driver is safely managed during every power transition.
