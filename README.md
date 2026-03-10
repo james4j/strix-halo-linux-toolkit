@@ -1,4 +1,4 @@
-# AMD Strix Halo (Ryzen AI 300) Linux Toolkit
+# HP ZBook Ultra Survival Guide (Strix Halo Linux)
 
 **⚠️ CRITICAL WARNING: THIS CAN BREAK YOUR MACHINE ⚠️**
 > **READ THIS BEFORE COPYING AND PASTING COMMANDS.**

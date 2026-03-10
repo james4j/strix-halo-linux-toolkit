@@ -16,7 +16,7 @@ The included patch (`scripts/xrtdeps.sh.patch`) refactors the detection logic to
     ```
 2.  Apply the patch from this toolkit:
     ```bash
-    patch xrtdeps.sh < ~/Clones/strix-halo-linux-toolkit/scripts/xrtdeps.sh.patch
+    patch xrtdeps.sh < ~/Gemini/zbook-ultra-survival-guide/scripts/xrtdeps.sh.patch
     ```
 3.  Run the dependency installer as usual:
     ```bash
