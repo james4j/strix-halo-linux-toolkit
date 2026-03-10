@@ -85,6 +85,21 @@ Manually running scripts before every sleep is annoying. You can automate the S2
 
 See [docs/AUTOMATION.md](docs/AUTOMATION.md) for the setup instructions.
 
-## 5. Emergency Recovery (Btrfs/UKI)
+## 6. Community Resources & BIOS Tips
+For broader hardware discussions, TDP tuning, and community-driven wikis, check out these resources:
+
+*   **[Strix Halo Wiki](https://strixhalo.wiki/)**: General hardware specs and community findings.
+*   **[Strix Halo Toolboxes](https://strix-halo-toolboxes.com/)**: Additional utilities and info.
+
+### Entering the BIOS (HP ZBook Ultra)
+While **F10** works for direct BIOS entry, it is often unreliable on fast-booting UKI setups. 
+*   **Recommendation:** "Spam" the **Esc** key immediately after power-on (pre-HP splash). 
+*   This will bring up the **HP Startup Menu**, giving you clean access to:
+    *   **F10**: BIOS Setup (e.g., to adjust **UMA Video Memory Size** for large LLMs).
+    *   **F9**: Boot Device Options.
+    *   **F2**: System Diagnostics.
+
+## 7. Emergency Recovery (Btrfs/UKI)
+
 
 ... [Rest of recovery section]
