@@ -35,6 +35,8 @@ To use the NPU for Local LLMs, you need the `amdxdna` kernel driver and the XRT 
 
 **Note for Source Builders:** If you are building XRT from the official AMD source on **CachyOS**, the dependency script will fail. Apply the patch included in this repo: [docs/XRT_PATCH_GUIDE.md](docs/XRT_PATCH_GUIDE.md).
 
+For high-performance AUR builds, see the **[Compiler Optimizations Guide](docs/COMPILER_OPTIMIZATIONS.md)**.
+
 1. **Install Headers First**:
    ```bash
    sudo pacman -S linux-cachyos-headers  # Match your kernel!
