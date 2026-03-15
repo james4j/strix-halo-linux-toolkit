@@ -37,6 +37,8 @@ To use the NPU for Local LLMs, you need the `amdxdna` kernel driver and the XRT 
 
 For high-performance AUR builds, see the **[Compiler Optimizations Guide](docs/COMPILER_OPTIMIZATIONS.md)**.
 
+To fix "Black Screen" resume hangs, see the **[VRAM Eviction Hook Guide](docs/VRAM_EVICTION_HOOK.md)**.
+
 1. **Install Headers First**:
    ```bash
    sudo pacman -S linux-cachyos-headers  # Match your kernel!
