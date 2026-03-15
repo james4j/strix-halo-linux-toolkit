@@ -1,4 +1,4 @@
-# Kernel Taints (Zen 5 / Strix Halo)
+# Kernel Alignment (Zen 5 / Strix Halo)
 
 These parameters are mandatory for achieving "Elite" stability on the Strix Halo platform, specifically for the **HP ZBook Ultra G1A**.
 

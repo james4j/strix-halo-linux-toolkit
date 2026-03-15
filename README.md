@@ -20,14 +20,14 @@ In CachyOS-land, kernel updates (`linux-cachyos`) arrive almost daily. Every tim
 3. **Re-sync Limine**: Run `sudo ./scripts/limine-snapper-sync.sh`.
 4. **Audit the Taint**: Check `/boot/limine.conf` to ensure your parameters haven't been stripped.
 
-## 2. The Golden Kernel Parameters (The Taints)
+## 2. The Golden Kernel Parameters (The Alignment)
 These parameters are mandatory for Strix Halo stability. Without them, your NPU will crash, your battery will drain in 2 hours, and your system will hang on wake.
 
 **Add these to your bootloader:**
 ```text
 pcie_aspm=force mem_sleep_default=s2idle intremap=off amd_iommu=fullflush iommu=pt acpi_enforce_resources=lax ttm.pages_limit=25165824 ttm.page_pool_size=25165824
 ```
-*Note: `amd_iommu=fullflush` is specifically for NPU stability under heavy 14k+ tiling loads. See [docs/KERNEL_TAINTS.md](docs/KERNEL_TAINTS.md) for the memory math.*
+*Note: `amd_iommu=fullflush` is specifically for NPU stability under heavy 14k+ tiling loads. See [docs/KERNEL_ALIGNMENT.md](docs/KERNEL_ALIGNMENT.md) for the memory math.*
 
 ## 3. NPU Stack Installation (XRT)
 
@@ -36,6 +36,8 @@ To use the NPU for Local LLMs, you need the `amdxdna` kernel driver and the XRT 
 **Note for Source Builders:** If you are building XRT from the official AMD source on **CachyOS**, the dependency script will fail. Apply the patch included in this repo: [docs/XRT_PATCH_GUIDE.md](docs/XRT_PATCH_GUIDE.md).
 
 For high-performance AUR builds, see the **[Compiler Optimizations Guide](docs/COMPILER_OPTIMIZATIONS.md)**.
+
+For real-world performance benchmarks, see the **[NPU Performance Observations](docs/NPU_PERFORMANCE.md)**.
 
 To fix "Black Screen" resume hangs, see the **[VRAM Eviction Hook Guide](docs/VRAM_EVICTION_HOOK.md)**.
 
