@@ -8,7 +8,7 @@ Because the sandbox runs in a virtualized environment (QEMU) without access to y
 
 ## 1. Architecture Overview
 - **Storage:** A raw disk image (`limine_test.img`) residing on your actual EFI System Partition (ESP).
-- **Mount Point:** The image is loopback-mounted to a local folder (e.g., `~/VMs/limine_test`) with user-level permissions.
+- **Mount Point:** The image is loopback-mounted to a local folder (e.g., `<PATH_TO_VMS>/limine_test`) with user-level permissions.
 - **Emulation:** QEMU boots this image in UEFI mode using OVMF firmware, treating the folder contents as a physical boot disk.
 
 ---
@@ -33,17 +33,17 @@ sudo mkfs.fat -F 32 /boot/limine_test.img
 ### Step 2: Create the Mount Point
 Create the local directory and mount the image with user permissions.
 ```bash
-mkdir -p ~/VMs/limine_test
-sudo mount -o loop,uid=$(id -u),gid=$(id -g) /boot/limine_test.img ~/VMs/limine_test
+mkdir -p <PATH_TO_VMS>/limine_test
+sudo mount -o loop,uid=$(id -u),gid=$(id -g) /boot/limine_test.img <PATH_TO_VMS>/limine_test
 ```
 
 ### Step 3: Populate the Sandbox
 Initialize the standard UEFI directory structure and copy your active Limine files.
 ```bash
-mkdir -p ~/VMs/limine_test/EFI/BOOT
-cp /boot/EFI/BOOT/BOOTX64.EFI ~/VMs/limine_test/EFI/BOOT/
-cp /boot/limine.conf ~/VMs/limine_test/
-cp /boot/cachyos.png ~/VMs/limine_test/
+mkdir -p <PATH_TO_VMS>/limine_test/EFI/BOOT
+cp /boot/EFI/BOOT/BOOTX64.EFI <PATH_TO_VMS>/limine_test/EFI/BOOT/
+cp /boot/limine.conf <PATH_TO_VMS>/limine_test/
+cp /boot/cachyos.png <PATH_TO_VMS>/limine_test/
 ```
 
 ---
@@ -53,7 +53,7 @@ cp /boot/cachyos.png ~/VMs/limine_test/
 ### Permanent Mount (Optional)
 Add the following to `/etc/fstab` to ensure the sandbox is available after reboot:
 ```text
-/boot/limine_test.img /home/james/VMs/limine_test vfat loop,uid=1000,gid=1000,nofail 0 0
+/boot/limine_test.img <PATH_TO_VMS>/limine_test vfat loop,uid=1000,gid=1000,nofail 0 0
 ```
 
 ### The QEMU Test Script
@@ -78,12 +78,12 @@ qemu-system-x86_64
 ---
 
 ## 5. Iteration Workflow
-1. **Modify:** Edit `~/VMs/limine_test/limine.conf`.
+1. **Modify:** Edit `<PATH_TO_VMS>/limine_test/limine.conf`.
 2. **Launch:** Run `bash test_limine.sh`.
 3. **Verify:** Check UI, menu hierarchy, and theme colors.
 4. **Deploy:** Once satisfied, copy the tested config back to the real ESP:
    ```bash
-   sudo cp ~/VMs/limine_test/limine.conf /boot/limine.conf
+   sudo cp <PATH_TO_VMS>/limine_test/limine.conf /boot/limine.conf
    ```
 
 ---

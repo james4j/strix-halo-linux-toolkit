@@ -1,111 +1,42 @@
-# HP ZBook Ultra Survival Guide (Strix Halo Linux)
+# HP ZBook Ultra G1a Survival Guide (Strix Halo Platform)
 
-**⚠️ CRITICAL WARNING: THIS CAN BREAK YOUR MACHINE ⚠️**
-> **READ THIS BEFORE COPYING AND PASTING COMMANDS.**
->
-> If the following warnings don't scare you, you either have the money to lose, the skills to deal with a bricked bootloader, or you're too dumb to know better. This repository modifies core kernel parameters, power states, and Unified Kernel Images (UKIs). 
-> 
-> **HP ZBOOK ULTRA / BIOS WARNING:** This toolkit was developed and tested on an **HP ZBook Power G1A Ultra (Strix Halo)**. HP BIOS implementations are notoriously "sensitive." If you botch your `limine.conf` or `cmdline`, the BIOS may drop your EFI entry entirely, leaving you staring at a "No Bootable Device" screen.
->
-> **RECOVERY PRE-REQS:** Do not touch these files unless you have a CachyOS/Arch Live USB ready and know how to `chroot`.
+A definitive collection of kernel parameters, firmware fixes, and optimization guides for the **ZBook Ultra G1a** (AMD Ryzen AI / Strix Halo).
+
+## 🚀 The Golden Parameters (Kernel v7.0+)
+
+The following command line is the validated **"Dynamic Gnosis"** state for Strix Halo. It leverages the enhanced TTM memory management of Kernel 7.0 to dynamically allocate up to 96GB for the GPU/NPU while preserving host RAM.
+
+```bash
+root=UUID=<ROOT_UUID> rw rootflags=subvol=@ pcie_aspm=force mem_sleep_default=s2idle intremap=off amd_iommu=fullflush iommu=pt acpi_enforce_resources=lax ttm.pages_limit=25165824 ttm.page_pool_size=25165824 rootdelay=20 nowatchdog nvme_load=YES zswap.enabled=0 loglevel=7 earlyprintk=vga,keep nvme_core.default_ps_max_latency_us=0 amdgpu.dcfeaturemask=0x8 amdgpu.cwsr_enable=0 acpi.prefer_microsoft_guid=1 amdgpu.sg_display=0 acpi_backlight=native pci=realloc preempt=full amdgpu.abmlevel=0
+```
+
+### Key Flags Explained:
+- **`ttm.pages_limit=25165824`**: (96GB) The dynamic memory ceiling for the iGPU/NPU.
+- **`nvme_core.default_ps_max_latency_us=0`**: Disables NVMe power states for maximum weight streaming performance.
+- **`preempt=full`**: Ensures UI responsiveness during massive NPU/GPU prefill tasks.
+- **`pcie_aspm=force`**: Overrides the BIOS FADT to enable PCIe ASPM (Critical for battery life).
+- **`amdgpu.dcfeaturemask=0x8`**: Disables PSR (Panel Self Refresh) to prevent sleep-hangs.
+- **`pci=realloc`**: **Mandatory for Thunderbolt 4 bridge assignment.**
+
+### 🧠 The "Dynamic Gnosis" Strategy
+On systems with **128GB RAM**, set the BIOS UMA Buffer to the **Minimum (512MB/2GB)**. Kernel 7.0 and ROCm 7.2.2 will automatically scale the memory usage up to your `ttm.pages_limit` dynamically. This "unleashes" 30GB+ of RAM for the Host OS/VMs that was previously wasted by firmware-stolen "VRAM".
 
 ---
 
-## 1. The CachyOS "Every Other Day" Ritual
-In CachyOS-land, kernel updates (`linux-cachyos`) arrive almost daily. Every time you run `pacman -Syu`, there is a risk that your "Taints" (kernel parameters) or your UKI paths will be desynchronized.
+## 📁 Repository Structure
+- `configs/`: Standard systemd services and kernel templates.
+- `docs/`: Deep dives into ASPM, S2idle, and UKIs.
+- `scripts/`: Automation for hardware fixes and recovery.
 
-**The Post-Update Checklist:**
-1. **Re-verify DKMS**: Ensure `amdxdna` built for the new kernel: `dkms status`.
-2. **Rebuild UKIs**: Run `sudo mkinitcpio -P` to bake the new kernel and parameters into your images.
-3. **Re-sync Limine**: Run `sudo ./scripts/limine-snapper-sync.sh`.
-4. **Audit the Taint**: Check `/boot/limine.conf` to ensure your parameters haven't been stripped.
+## 📦 Maintenance Checklist
+- After any systemd or kernel update, verify your parameters:
+  ```bash
+  cat /proc/cmdline
+  ```
+- If using UKIs, ensure you re-run:
+  ```bash
+  sudo mkinitcpio -P
+  ```
 
-## 2. The Golden Kernel Parameters (The Alignment)
-These parameters are mandatory for Strix Halo stability. Without them, your NPU will crash, your battery will drain in 2 hours, and your system will hang on wake.
-
-**Add these to your bootloader:**
-```text
-pcie_aspm=force mem_sleep_default=s2idle intremap=off amd_iommu=fullflush iommu=pt acpi_enforce_resources=lax ttm.pages_limit=25165824 ttm.page_pool_size=25165824
-```
-*Note: `amd_iommu=fullflush` is specifically for NPU stability under heavy 14k+ tiling loads. See [docs/KERNEL_ALIGNMENT.md](docs/KERNEL_ALIGNMENT.md) for the memory math.*
-
-## 3. NPU Stack Installation (XRT)
-
-To use the NPU for Local LLMs, you need the `amdxdna` kernel driver and the XRT runtime.
-
-**Note for Source Builders:** If you are building XRT from the official AMD source on **CachyOS**, the dependency script will fail. Apply the patch included in this repo: [docs/XRT_PATCH_GUIDE.md](docs/XRT_PATCH_GUIDE.md).
-
-For high-performance AUR builds, see the **[Compiler Optimizations Guide](docs/COMPILER_OPTIMIZATIONS.md)**.
-
-For real-world performance benchmarks, see the **[NPU Performance Observations](docs/NPU_PERFORMANCE.md)**.
-
-To fix "Black Screen" resume hangs, see the **[VRAM Eviction Hook Guide](docs/VRAM_EVICTION_HOOK.md)**.
-
-1. **Install Headers First**:
-   ```bash
-   sudo pacman -S linux-cachyos-headers  # Match your kernel!
-   ```
-2. **Install the Stack**:
-   ```bash
-   paru -S xrt-amdxdna psmisc  # psmisc is required for the npu-recovery script
-   ```
-3. **Environment Setup**: Add to your `~/.zshrc` or `~/.bashrc`:
-   ```bash
-   export XILINX_XRT=/opt/xilinx/xrt
-   export LD_LIBRARY_PATH=$XILINX_XRT/lib:$LD_LIBRARY_PATH
-   export PATH=$XILINX_XRT/bin:$PATH
-   ```
-
-## 4. Running Models (The Engine)
-The Strix Halo NPU (XDNA 2) is **not** currently supported by standard `llama.cpp` or LM Studio. You must use a native XDNA 2 engine to achieve 51 TOPS.
-
-* **Primary Engine**: [FastFlowLM](https://github.com/hpcaitech/FastFlowLM) (The current standard for native XDNA 2 inference on Linux).
-
-## 5. Toolkit Scripts & Discovery
-
-**⚠️ IMPORTANT:** The scripts in this toolkit contain PCI IDs (like `0000:c5:00.5`) specific to the HP ZBook Ultra. You **must** verify your own IDs before running them.
-
-### Finding Your Hardware IDs
-Run these commands to identify your specific hardware paths:
-
-*   **For USB4 (S2idle Fix)**:
-    ```bash
-    lspci -D | grep "USB4 Host Router"
-    ```
-    Take these IDs and update the `TARGETS` array in `scripts/s2idle_fix.sh`.
-
-*   **For the NPU**:
-    ```bash
-    lspci -D | grep "Processing accelerators"
-    # Should return something like [0000:c4:00.1]
-    ```
-
-### Script Overview
-* **`s2idle_fix.sh`**: Disables the USB4 Host Routers that cause S2idle resume hangs. Update the `TARGETS` with your IDs from above.
-* **`npu-recovery.sh`**: **Trigger this with a Hotkey.** Map to a custom shortcut. It force-kills NPU-locked processes and reloads the driver.
-* **`test-npu-api.sh`**: Quick verification for your inference server.
-* **`test_limine.sh`**: A **Safe UI Sandbox** tool. (See [docs/LIMINE_SANDBOX.md](docs/LIMINE_SANDBOX.md)).
-
-## 4. System Automation (Highly Recommended)
-Manually running scripts before every sleep is annoying. You can automate the S2idle fix and the NPU driver reload using `systemd-sleep` hooks.
-
-See [docs/AUTOMATION.md](docs/AUTOMATION.md) for the setup instructions.
-
-## 6. Community Resources & BIOS Tips
-For broader hardware discussions, TDP tuning, and community-driven wikis, check out these resources:
-
-*   **[Strix Halo Wiki](https://strixhalo.wiki/)**: General hardware specs and community findings.
-*   **[Strix Halo Toolboxes](https://strix-halo-toolboxes.com/)**: Additional utilities and info.
-
-### Entering the BIOS (HP ZBook Ultra)
-While **F10** works for direct BIOS entry, it is often unreliable on fast-booting UKI setups. 
-*   **Recommendation:** "Spam" the **Esc** key immediately after power-on (pre-HP splash). 
-*   This will bring up the **HP Startup Menu**, giving you clean access to:
-    *   **F10**: BIOS Setup (e.g., to adjust **UMA Video Memory Size** for large LLMs).
-    *   **F9**: Boot Device Options.
-    *   **F2**: System Diagnostics.
-
-## 7. Emergency Recovery (Btrfs/UKI)
-
-
-... [Rest of recovery section]
+---
+*Maintained by the ZBook Ultra Community (Strix Halo Alpha Team)*

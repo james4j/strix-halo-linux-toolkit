@@ -19,13 +19,18 @@ Verified settings for the **Ryzen AI Max+ PRO 395 (Strix Halo)** to achieve stab
 | **Fast Boot** | **Disabled** | Recommended to ensure reliable initialization of the NPU and Thunderbolt firmware. |
 
 ## 3. Hardware Insights (AMD PMF)
-A "hidden" or "3rd Party" menu exists labeled **AMD PMF Feature**. It contains:
-*   `APTS Control Method Settings`
-*   `ATST Function`
+A "hidden" or "3rd Party" menu exists labeled **AMD PMF Feature**. 
 
-**Research Note**: The existence of this menu confirms that the `ATST` and `APTS` symbols are present in the firmware but incorrectly linked in the ACPI DSDT. Disabling "Power Control" (above) is the effective workaround to prevent the system from deadlocking on these unlinked symbols.
+**Verified Path**: `Advanced > AMD PMF Feature` (May require "3rd Party Option" or "Advanced" toggle).
+
+| Setting | Recommendation | Impact |
+|---------|----------------|--------|
+| **PMF Device Support** | **Enabled** (Default) | Main toggle for AMD Platform Management. |
+| **ATST / APMF Functions** | **Disabled** | Individual sub-functions were observed to be **Disabled** by default in the sub-menus. |
+
+**Research Note**: The existence of this menu confirms the "Firmware Disconnect." The DSDT defines the `ATST` and `APTS` symbols as `External`, but because the individual functions are **Disabled** at the UEFI level, the logic is never exported to the OS. This confirms that the `AE_NOT_FOUND` error is a literal hardware-state report. Disabling "Power Control" in the main Power menu is the primary fix to stop the EC from attempting to call these dead logic paths.
 
 ## 4. Integrated GPU (VRAM)
 **Path**: `Advanced > Device Options`
-*   **UMA Video Memory Size**: Set to **32GB** or **64GB**.
-*   **Result**: Combined with the `ttm.pages_limit` kernel parameter, this enables a **96GB-128GB** unified memory pool for LLM inference.
+*   **UMA Video Memory Size**: Set to **Minimum (512MB or 2GB)**.
+*   **The 7.0 Strategy**: Unlike previous generations, **Strix Halo on Kernel 7.0+** uses an advanced TTM (Translation Table Manager) that can dynamically scale the GPU/NPU into system RAM. By setting the BIOS to the minimum, you reclaim **30GB+ of RAM** for the Host OS/VMs, while still allowing the GPU to scale up to the limit defined by the `ttm.pages_limit` kernel parameter (e.g., 96GB).

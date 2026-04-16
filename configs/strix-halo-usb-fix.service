@@ -4,7 +4,7 @@ After=multi-user.target
 
 [Service]
 Type=oneshot
-ExecStart=/home/james/Gemini/scripts/s2idle_fix.sh --disable
+ExecStart=<PATH_TO_SCRIPTS>/s2idle_fix.sh --disable
 RemainAfterExit=yes
 
 [Install]
